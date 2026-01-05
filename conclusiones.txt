@@ -1,6 +1,7 @@
-Hallazgos y Conclusiones del Ejercicio 1
+Hallazgos y Conclusiones de la prueba de carga
 
-Se ejecutaron dos escenarios de carga contra https://fakestoreapi.com/auth/login usando k6 y el script `load-test.js` parametrizado con 30 usuarios virtuales (VUs). Ambos escenarios mantuvieron los mismos checks funcionales y thresholds.
+Se ejecutaron dos escenarios de carga contra https://fakestoreapi.com/auth/login usando k6 y el script `load-test.js` parametrizado con 30 usuarios virtuales (VUs). 
+Ambos escenarios mantuvieron los mismos checks funcionales y thresholds.
 
 Escenario A – Perfil largo (30s/2m/30s, ~3 min totales)
 1. Alcance de TPS (Objetivo: > 20 TPS)
