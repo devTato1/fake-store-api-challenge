@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { SharedArray } from 'k6/data';
+import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.2/index.js';
 import papaparse from 'https://jslib.k6.io/papaparse/5.1.1/index.js';
 
 // 1. CARGA DE DATOS CSV
@@ -33,10 +34,8 @@ export const options = {
     },
 };
 
-// --------------------------------------------------------------------------
-// 3. LÓGICA DE USUARIO VIRTUAL (VU CODE)
-// Esto es lo que ejecutará cada usuario virtual repetidamente.
-// --------------------------------------------------------------------------
+
+// 3. LÓGICA DE USUARIO VIRTUAL
 export default function () {
     // Seleccionar un usuario aleatorio del CSV para cada petición
     const randomIndex = Math.floor(Math.random() * csvData.length);
@@ -75,4 +74,14 @@ export default function () {
     // Pacing: Pequeña pausa aleatoria entre 0.5s y 1s entre peticiones
     // para simular un comportamiento más realista y no saturar artificialmente.
     sleep(Math.random() * 0.5 + 0.5);
+}
+
+export function handleSummary(data) {
+    const reportFile = 'k6-report.txt';
+    // textSummary replica el formato de la consola y k6 sobrescribe el archivo si ya existe.
+    const summaryText = textSummary(data, { indent: ' ', enableColors: false });
+    return {
+        stdout: textSummary(data, { indent: ' ', enableColors: true }),
+        [reportFile]: summaryText,
+    };
 }
