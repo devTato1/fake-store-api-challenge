@@ -1,20 +1,24 @@
 Hallazgos y Conclusiones del Ejercicio 1
 
-Se ejecutó una prueba de carga contra el servicio de login (https://fakestoreapi.com/auth/login) utilizando la herramienta k6, con una carga de 30 usuarios virtuales concurrentes.
+Se ejecutaron dos escenarios de carga contra https://fakestoreapi.com/auth/login usando k6 y el script `load-test.js` parametrizado con 30 usuarios virtuales (VUs). Ambos escenarios mantuvieron los mismos checks funcionales y thresholds.
 
-A continuación, se detallan los hallazgos respecto a los criterios de aceptación establecidos:
+Escenario A – Perfil largo (30s/2m/30s, ~3 min totales)
+1. Alcance de TPS (Objetivo: > 20 TPS)
+   - Cumplido. Promedio observado: 23.33 req/s (4216 solicitudes totales).
+2. Tiempo de respuesta (Objetivo: p95 < 1.5 s)
+   - Cumplido. p95 de `http_req_duration`: 337.32 ms.
+3. Tasa de error (Objetivo: < 3%)
+   - Cumplido. `http_req_failed`: 0.00% (todas las peticiones devolvieron token válido).
 
-1. ALCANCE DE TPS (Objetivo: > 20 TPS)
-   - Resultado: CUMPLIDO.
-   - Hallazgo: La prueba logró generar un promedio de [PONER AQUI TU VALOR DE http_reqs, EJ: 45.5] transacciones por segundo (TPS/RPS), superando holgadamente el objetivo mínimo de 20 TPS.
+Escenario B – Perfil corto (10s/40s/10s, ~1 min total)
+1. Alcance de TPS
+   - Cumplido. Promedio observado: 23.26 req/s (1410 solicitudes totales).
+2. Tiempo de respuesta
+   - Cumplido. p95 de `http_req_duration`: 341.57 ms.
+3. Tasa de error
+   - Cumplido. `http_req_failed`: 0.00%.
 
-2. TIEMPO DE RESPUESTA (Objetivo: Máximo 1.5 segundos)
-   - Resultado: CUMPLIDO.
-   - Hallazgo: El tiempo de respuesta del percentil 95 (p95) fue de [PONER AQUI TU VALOR p(95) de http_req_duration, EJ: 350ms], lo cual está muy por debajo del límite permitido de 1500ms (1.5s). La API demostró un rendimiento excelente bajo esta carga.
-
-3. TASA DE ERROR (Objetivo: Menor al 3%)
-   - Resultado: CUMPLIDO.
-   - Hallazgo: La tasa de error (http_req_failed) durante la prueba fue del [PONER AQUI TU VALOR, EJ: 0.00%]. Todas las peticiones de login fueron exitosas y devolvieron el token esperado.
-
-CONCLUSIÓN GENERAL:
-El servicio de login de fakestoreapi.com cumple satisfactoriamente con todos los requisitos de rendimiento establecidos para el escenario de carga de 20 TPS. La API se mostró estable, rápida y sin errores durante la ventana de prueba de 2 minutos.
+Conclusión general
+- El servicio de login cumple los requisitos (≥20 TPS, p95 < 1.5 s, errores < 3%) en ambos perfiles de duración.
+- La ejecución de 3 minutos proporciona más datos para análisis estadístico, mientras que la de 1 minuto permite una validación rápida sin sacrificar el rendimiento observado.
+- Para repetir cualquiera de los escenarios basta con ajustar `options.stages` tal como se describe en `readme.txt`; los resultados quedan registrados en `k6-report.txt` tras cada corrida.

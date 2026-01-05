@@ -18,9 +18,9 @@ export const options = {
     // Si responde en 1s, necesitamos 20 VUs.
     // Usaremos 30 VUs para asegurar superar los 20 TPS cómodamente.
     stages: [
-        { duration: '30s', target: 30 }, // Ramp-up: Subir a 30 usuarios virtuales en 30s
-        { duration: '2m', target: 30 },  // Meseta: Mantener 30 usuarios por 2 minutos
-        { duration: '30s', target: 0 },  // Ramp-down: Bajar a 0 usuarios en 30s
+        { duration: '10s', target: 30 }, // Ramp-up: Subir a 30 usuarios virtuales en 30s
+        { duration: '40s', target: 30 },  // Meseta: Mantener 30 usuarios por 2 minutos
+        { duration: '10s', target: 0 },  // Ramp-down: Bajar a 0 usuarios en 30s
     ],
 
     // REQUISITO: Validaciones (SLA/SLO)
@@ -29,7 +29,6 @@ export const options = {
         http_req_failed: ['rate<0.03'], 
         // 2. Tiempo de respuesta máximo 1.5 segundos (Usamos el percentil 95 para ser más precisos)
         http_req_duration: ['p(95)<1500'], 
-        // Opcional: Validar que alcanzamos los TPS deseados (Requests/sec > 20)
         http_reqs: ['rate>20'], 
     },
 };
@@ -76,9 +75,9 @@ export default function () {
     sleep(Math.random() * 0.5 + 0.5);
 }
 
+// 4. RESUMEN PERSONALIZADO AL FINALIZAR LA PRUEBA
 export function handleSummary(data) {
     const reportFile = 'k6-report.txt';
-    // textSummary replica el formato de la consola y k6 sobrescribe el archivo si ya existe.
     const summaryText = textSummary(data, { indent: ' ', enableColors: false });
     return {
         stdout: textSummary(data, { indent: ' ', enableColors: true }),

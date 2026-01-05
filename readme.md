@@ -1,43 +1,82 @@
-# Ejercicio 1 · Prueba de Carga al Login de FakeStore API
+# ⚡ FakeStore Login Load Test Challenge
 
-Este repositorio contiene un script de k6 que valida el desempeño del endpoint `https://fakestoreapi.com/auth/login` bajo una carga concurrente suficiente para superar el objetivo de 20 transacciones por segundo (TPS).
+Script de k6 para validar `https://fakestoreapi.com/auth/login` y demostrar que soporta ≥20 TPS con p95 < 1.5 s y errores < 3%.
 
-## Contenido del repositorio
-- **load-test.js** · Script principal de k6 con los escenarios, umbrales (SLA/SLO) y lógica de autenticación.
-- **users.csv** · Dataset de credenciales usado para parametrizar las solicitudes.
-- **conclusiones.txt** · Plantilla para documentar resultados y hallazgos posteriores a la ejecución.
-- **readme.md** · Este documento.
+## 🛠️ Stack Tecnológico
+- **Lenguaje:** JavaScript ES6
+- **Motor de carga:** k6 v0.47+
+- **Data binding:** `SharedArray` + `papaparse` sobre `users.csv`
+- **Reportes:** `handleSummary` + `textSummary` → `k6-report.txt`
+- **IDE sugerido:** VS Code / cualquier editor ES6 friendly
 
-## Requisitos previos
-1. [Instalar k6](https://k6.io/docs/get-started/installation/) (se recomienda la versión v0.47.0 o superior).
-2. Confirmar acceso a Internet para alcanzar `fakestoreapi.com`.
+## 📥 Instalando k6
+| Sistema | Comando |
+| --- | --- |
+| Windows (Chocolatey) | `choco install k6` |
+| Windows (winget) | `winget install k6 --source winget` |
+| macOS (Homebrew) | `brew install k6` |
+| Linux Debian/Ubuntu | `sudo apt update && sudo apt install -y gpg && curl -s https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg && echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list && sudo apt update && sudo apt install -y k6` |
+| Linux Fedora/CentOS | `sudo dnf install k6` |
 
-## Cómo ejecutar la prueba
+Confirma la instalación con `k6 version`. Asegúrate de tener `users.csv` junto a `load-test.js` y acceso a Internet.
+
+## 🚀 Puesta en marcha
 ```bash
-# 1. Ubícate en la carpeta del proyecto
-cd /ruta/al/proyecto
+git clone git@github.com:devTato1/fake-store-api-challenge.git
+cd fake-store-api-challenge
+```
+No hay dependencias adicionales: k6 ejecuta el script directamente.
 
-# 2. Ejecuta el escenario
+## ⚙️ Ejecución
+```bash
+# Windows / Linux / macOS
 k6 run load-test.js
 ```
+1. `SharedArray` rota credenciales desde `users.csv`.
+2. `check()` valida status 200/201 y la presencia de `token`.
+3. Escenario por defecto: 30 VUs durante ~3 min (30s ↑, 2m meseta, 30s ↓) ≈ 23 TPS.
+4. La consola y `k6-report.txt` muestran los thresholds (`http_req_failed`, `http_req_duration p(95)`, `http_reqs rate`).
 
-La prueba dura ~3 minutos (30 s de ramp-up, 2 min de meseta, 30 s de ramp-down). Al finalizar, k6 mostrará un resumen de los umbrales configurados:
-- `http_req_failed < 3%`
-- `http_req_duration p(95) < 1500 ms`
-- `http_reqs rate > 20`
+## ⏱️ Escenarios configurados
+```js
+// Perfil largo (default ~3 min)
 
-Cada petición usa credenciales seleccionadas aleatoriamente desde `users.csv`. Si alguna respuesta no contiene token, el script registrará el cuerpo de la respuesta para facilitar el diagnóstico.
+  { duration: '30s', target: 30 },
+  { duration: '2m', target: 30 },
+  { duration: '30s', target: 0 },
+];
 
-## Personalización
-- **Carga**: ajusta `stages` dentro de `options` para modificar usuarios virtuales, duración o rampas.
-- **SLA/SLO**: modifica `thresholds` si necesitas otros límites de error, latencia o throughput.
-- **Dataset**: agrega o reemplaza filas en `users.csv` manteniendo las columnas `user` y `passwd`.
-- **Etiquetas**: cambia el valor de `tags.name` en la petición si deseas agrupar métricas por escenario en Grafana/InfluxDB.
+// Perfil corto (~1 min)
 
-## Reporte de resultados
-Registra los KPI reales en `conclusiones.txt` después de cada corrida. Sustituye los placeholders `[PONER AQUI ...]` con los valores de `http_reqs`, `http_req_duration p(95)` y `http_req_failed` informados por k6 para dejar trazabilidad del ejercicio.
+  { duration: '10s', target: 30 },
+  { duration: '40s', target: 30 },
+  { duration: '10s', target: 0 },
+];
+```
+Modifica `options.stages` para cambiar duración o VUs, guarda y vuelve a correr `k6 run load-test.js`.
 
-## Próximos pasos sugeridos
-1. Ejecutar `k6 run load-test.js` y capturar la evidencia (output de consola o archivo `summary.json` si configuras `handleSummary`).
-2. Completar `conclusiones.txt` con los valores obtenidos y adjuntar insights adicionales (por ejemplo, behavior bajo picos, errores HTTP específicos, etc.).
-3. Si es necesario iterar, ajustar el script, volver a ejecutar y comparar los indicadores contra los objetivos.
+## 📊 Reportes y hallazgos
+- `k6-report.txt` replica el resumen que ves en consola.
+- Documenta los KPI (TPS, p95, % error) en `conclusiones.txt`, indicando qué escenario usaste.
+- Si necesitas exportar a Grafana/Influx, puedes ampliar `handleSummary` o usar `--out` de k6.
+
+## 📂 Estructura
+```text
+.
+├── load-test.js      # Script k6 con escenarios, checks y handleSummary
+├── users.csv         # Dataset user,passwd
+├── k6-report.txt     # Reporte plano por ejecución
+├── conclusiones.txt  # Resultados del ejercicio
+└── readme.md         # Este documento
+```
+
+## 📝 Notas útiles
+- Si la API no devuelve token, se loguea `Status` y `Body` para depuración.
+- Ajusta `thresholds` si cambian los SLA/SLO.
+- `tags: { name: 'LoginReq' }` facilita filtrar métricas en herramientas externas.
+
+---
+**Autor:** Leonardo Reascos
+
+
+**Autor:** Leonardo Reascos
