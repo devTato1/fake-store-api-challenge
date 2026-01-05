@@ -77,6 +77,3 @@ Modifica `options.stages` para cambiar duración o VUs, guarda y vuelve a correr
 
 ---
 **Autor:** Leonardo Reascos
-
-
-**Autor:** Leonardo Reascos
