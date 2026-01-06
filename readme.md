@@ -40,7 +40,7 @@ k6 run load-test.js
 
 ## Escenarios Probados
 ```js
-// Perfil largo (default ~3 min)
+// Perfil largo ( ~3 min)
 
   { duration: '30s', target: 30 },
   { duration: '2m', target: 30 },
